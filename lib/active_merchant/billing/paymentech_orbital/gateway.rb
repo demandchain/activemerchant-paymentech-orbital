@@ -2,7 +2,7 @@ module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
     module PaymentechOrbital
       class Gateway < ActiveMerchant::Billing::Gateway
-        cattr_accessor :currency_code, :currency_exponent, :headers, :urls
+        cattr_accessor :currency_code, :currency_exponent, :headers, :urls, :active_url
 
         self.urls = {
           :test => [
@@ -14,6 +14,7 @@ module ActiveMerchant #:nodoc:
             'https://orbital2.paymentech.net/authorize'
           ]
         }
+        self.active_url = 0
 
         # Currency information for the api.
         self.currency_code = "840"
@@ -108,7 +109,13 @@ module ActiveMerchant #:nodoc:
         end
 
         def endpoint_url
-          self.class.urls[Base.gateway_mode][0]
+          use_url = self.class.active_url
+
+          # Force use_url to be valid
+          use_url = 0 if use_url < 0
+          use_url = 0 if use_url > self.class.urls[Base.gateway_mode].length
+
+          self.class.urls[Base.gateway_mode][use_url]
         end
       end
     end
